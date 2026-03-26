@@ -1,0 +1,67 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: essay-scoring-system
+  
+  # 数据源配置（已切换为 MySQL）
+  # 注意：请先创建 MySQL 数据库 essayscoring，然后修改下面的用户名和密码
+  datasource:
+    url: jdbc:mysql://localhost:3306/essayscoring?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root        # TODO: 修改为你的 MySQL 用户名
+    password: 123456789   # TODO: 修改为你的 MySQL 密码
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update    # 自动创建/更新表结构
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+  
+  # H2 控制台配置（已禁用，因为使用 MySQL）
+  # h2:
+  #   console:
+  #     enabled: false
+  
+  # H2 数据库配置（已切换到 MySQL，如需使用 H2，请取消注释下面的配置并注释掉上面的 MySQL 配置）
+  # datasource:
+  #   url: jdbc:h2:file:./data/essayscoring
+  #   driver-class-name: org.h2.Driver
+  #   username: sa
+  #   password: 
+  # jpa:
+  #   properties:
+  #     hibernate:
+  #       dialect: org.hibernate.dialect.H2Dialect
+  
+  # 阿里云百炼平台配置 (Spring AI DashScope)
+  cloud:
+    ai:
+      dashscope:
+        # API Key - 请替换为您的阿里云百炼平台API Key
+        api-key: ${DASHSCOPE_API_KEY:sk-dafb689c85a34f68a50bb2ec3bb31ffd}
+        # 模型配置
+        chat:
+          options:
+            model: qwen3-max
+            temperature: 0.3
+            max-tokens: 2000
+
+# JWT 配置
+jwt:
+  # 请修改为更长的随机字符串，并以 Base64 形式存储
+  secret: c29tZS1sb25nLXNlY3JldC1rZXktZm9yLWVzc2F5LXNjb3Jpbmc=  # "some-long-secret-key-for-essay-scoring" 的 Base64
+  expiration-ms: 86400000   # 24 小时
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.study.ai.essayscoring: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
