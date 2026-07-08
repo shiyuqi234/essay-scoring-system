@@ -10,14 +10,14 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -26,7 +26,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             overflow: hidden;
         }
-        
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -36,7 +36,7 @@
             justify-content: space-between;
             gap: 20px;
         }
-        
+
         .header h1 {
             font-size: 2.2em;
             margin-bottom: 6px;
@@ -49,54 +49,70 @@
 
         .header-right {
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-            font-size: 13px;
-        }
-
-        .login-row {
-            display: flex;
-            gap: 6px;
             align-items: center;
+            gap: 12px;
+            font-size: 14px;
         }
 
-        .login-input {
-            padding: 6px 8px;
-            border-radius: 4px;
-            border: none;
-            font-size: 13px;
-            min-width: 110px;
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .login-btn {
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: none;
-            background: #ffcf33;
-            color: #333;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .login-info {
+        .user-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
             font-size: 12px;
-            opacity: 0.9;
         }
 
-        .register-link {
-            font-size: 12px;
-            text-decoration: underline;
+        .logout-btn {
+            padding: 7px 18px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            opacity: 0.9;
+            transition: all 0.2s;
         }
-        
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        /* 通知横幅 */
+        .notify {
+            display: none;
+            padding: 12px 20px;
+            margin: 16px 20px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .notify.error {
+            display: block;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .notify.success {
+            display: block;
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
         .tabs {
             display: flex;
             background: #f8f9fa;
             border-bottom: 2px solid #e0e0e0;
         }
-        
+
         .tab {
             flex: 1;
             padding: 20px;
@@ -108,29 +124,29 @@
             font-weight: bold;
             transition: all 0.3s;
         }
-        
+
         .tab.active {
             background: white;
             color: #667eea;
             border-bottom: 3px solid #667eea;
         }
-        
+
         .tab-content {
             display: none;
             padding: 30px;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -138,40 +154,40 @@
             border-radius: 10px;
             text-align: center;
         }
-        
+
         .stat-card h3 {
             font-size: 2.5em;
             margin: 10px 0;
         }
-        
+
         .table-container {
             overflow-x: auto;
             margin-top: 20px;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
         th, td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #e0e0e0;
         }
-        
+
         th {
             background: #f8f9fa;
             font-weight: bold;
             color: #333;
         }
-        
+
         tr:hover {
             background: #f8f9fa;
         }
-        
+
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -182,19 +198,19 @@
             margin: 5px;
             transition: transform 0.2s;
         }
-        
+
         .btn:hover {
             transform: translateY(-2px);
         }
-        
+
         .btn-danger {
             background: #ff6b6b;
         }
-        
+
         .btn-success {
             background: #6bcf7f;
         }
-        
+
         .modal {
             display: none;
             position: fixed;
@@ -205,7 +221,7 @@
             background: rgba(0,0,0,0.5);
             z-index: 1000;
         }
-        
+
         .modal-content {
             background: white;
             margin: 50px auto;
@@ -215,17 +231,21 @@
             max-height: 80vh;
             overflow-y: auto;
         }
-        
+
+        .modal-content.wide {
+            max-width: 900px;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
         }
-        
+
         input, select, textarea {
             width: 100%;
             padding: 10px;
@@ -233,27 +253,107 @@
             border-radius: 5px;
             font-size: 14px;
         }
-        
+
         textarea {
             min-height: 100px;
             resize: vertical;
         }
-        
+
         .badge {
             display: inline-block;
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 12px;
         }
-        
+
         .badge.enabled {
             background: #6bcf7f;
             color: white;
         }
-        
+
         .badge.disabled {
             background: #ccc;
             color: #666;
+        }
+
+        /* 作文详情弹窗 */
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 6px;
+        }
+
+        .detail-section .essay-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .score-grid .mini-card {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .score-grid .mini-card .val {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .score-grid .mini-card .lbl {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* 可编辑评分字段 */
+        .score-edit-input {
+            width: 70px;
+            padding: 6px 8px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .score-edit-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .comment-edit-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .comment-edit-input:focus {
+            border-color: #667eea;
+            outline: none;
         }
     </style>
 </head>
@@ -264,28 +364,23 @@
                 <h1>👩‍🏫 教师管理后台</h1>
                 <p>作文评分系统管理平台</p>
             </div>
-            <div class="header-right">
-                <div id="loginPanel" class="login-row">
-                    <input type="text" id="loginUsername" class="login-input" placeholder="教师用户名">
-                    <input type="password" id="loginPassword" class="login-input" placeholder="密码">
-                    <button type="button" id="loginBtn" class="login-btn">登录</button>
-                </div>
-                <div class="login-info">
-                    <span id="registerTeacher" class="register-link">没有账号？点击这里注册教师账号</span>
-                </div>
-                <div id="loginInfo" class="login-info" style="display:none;">
-                    已登录：<span id="loginUser"></span>（<span id="loginRole"></span>）
-                    <button type="button" id="logoutBtn" class="login-btn" style="margin-left:6px;">退出</button>
+            <div class="header-right" id="headerRight">
+                <div class="user-info" id="authInfo" style="display:none;">
+                    <span>👤 <span id="loginUser"></span></span>
+                    <span class="user-badge" id="loginRole"></span>
+                    <button class="logout-btn" id="logoutBtn">退出登录</button>
                 </div>
             </div>
         </div>
-        
+
+        <div class="notify" id="notify"></div>
+
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('essays')">作文管理</button>
-            <button class="tab" onclick="switchTab('rules')">评分规则</button>
-            <button class="tab" onclick="switchTab('statistics')">统计分析</button>
+            <button class="tab active" data-tab="essays" onclick="switchTab('essays')">作文管理</button>
+            <button class="tab" data-tab="rules" onclick="switchTab('rules')">评分规则</button>
+            <button class="tab" data-tab="statistics" onclick="switchTab('statistics')">统计分析</button>
         </div>
-        
+
         <!-- 作文管理 -->
         <div id="essays" class="tab-content active">
             <h2>作文列表</h2>
@@ -308,202 +403,168 @@
                 </table>
             </div>
         </div>
-        
-        <!-- 评分规则 -->
+
+        <!-- 评分规则 — 多维度可视化配置 -->
         <div id="rules" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>评分规则管理</h2>
-                <button class="btn" onclick="showRuleModal()">新增规则</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2>评分维度配置</h2>
             </div>
-            <div class="table-container">
-                <table id="rulesTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>规则名称</th>
-                            <th>适用年级</th>
-                            <th>适用文体</th>
-                            <th>维度</th>
-                            <th>权重</th>
-                            <th>状态</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rulesTableBody"></tbody>
-                </table>
+            <p style="color:#666;font-size:13px;margin-bottom:16px;">
+                选择一个年级和文体，然后为四个评分维度勾选评价标准、调整权重。AI 评分时会根据你选的这些标准来打分。
+            </p>
+
+            <!-- 筛选条件 -->
+            <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:180px;">
+                    <label style="font-weight:bold;font-size:13px;">适用年级</label>
+                    <select id="rulesGrade" onchange="loadRulesConfig()" style="width:100%;padding:8px;border:1.5px solid #d1d5db;border-radius:6px;">
+                        <option value="">全部年级</option>
+                        <option value="小学三年级">小学三年级</option>
+                        <option value="小学四年级">小学四年级</option>
+                        <option value="小学五年级">小学五年级</option>
+                        <option value="小学六年级">小学六年级</option>
+                        <option value="初中一年级">初中一年级</option>
+                        <option value="初中二年级">初中二年级</option>
+                        <option value="初中三年级">初中三年级</option>
+                        <option value="高中一年级">高中一年级</option>
+                        <option value="高中二年级">高中二年级</option>
+                        <option value="高中三年级">高中三年级</option>
+                    </select>
+                </div>
+                <div style="flex:1;min-width:180px;">
+                    <label style="font-weight:bold;font-size:13px;">适用文体</label>
+                    <select id="rulesEssayType" onchange="loadRulesConfig()" style="width:100%;padding:8px;border:1.5px solid #d1d5db;border-radius:6px;">
+                        <option value="">全部文体</option>
+                        <option value="记叙文">记叙文</option>
+                        <option value="议论文">议论文</option>
+                        <option value="说明文">说明文</option>
+                        <option value="应用文">应用文</option>
+                        <option value="散文">散文</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 四维度配置卡片 -->
+            <div id="rulesConfigCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+                <div style="text-align:center;padding:40px;color:#999;grid-column:1/-1;">请选择年级和文体后加载配置</div>
+            </div>
+
+            <div style="margin-top:20px;text-align:right;">
+                <button class="btn btn-success" onclick="saveRulesConfig()" style="padding:12px 32px;font-size:16px;">💾 保存配置</button>
             </div>
         </div>
-        
+
         <!-- 统计分析 -->
         <div id="statistics" class="tab-content">
             <h2>统计分析</h2>
             <div class="stats-grid" id="statsGrid"></div>
         </div>
     </div>
-    
-    <!-- 规则编辑模态框 -->
-    <div id="ruleModal" class="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle">新增评分规则</h2>
-            <form id="ruleForm">
-                <input type="hidden" id="ruleId">
-                <div class="form-group">
-                    <label>规则名称 *</label>
-                    <input type="text" id="ruleName" required>
-                </div>
-                <div class="form-group">
-                    <label>适用年级</label>
-                    <input type="text" id="applicableGrade" placeholder="留空表示全部">
-                </div>
-                <div class="form-group">
-                    <label>适用文体</label>
-                    <input type="text" id="applicableEssayType" placeholder="留空表示全部">
-                </div>
-                <div class="form-group">
-                    <label>评分维度 *</label>
-                    <select id="dimension" required>
-                        <option value="content">内容</option>
-                        <option value="structure">结构</option>
-                        <option value="language">语言</option>
-                        <option value="creativity">创意</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>权重 (0-1) *</label>
-                    <input type="number" id="weight" step="0.1" min="0" max="1" required>
-                </div>
-                <div class="form-group">
-                    <label>评分标准 *</label>
-                    <textarea id="criteria" required></textarea>
-                </div>
-                <div style="text-align: right; margin-top: 20px;">
-                    <button type="button" class="btn" onclick="closeRuleModal()">取消</button>
-                    <button type="submit" class="btn">保存</button>
-                </div>
-            </form>
+
+    <!-- 作文详情弹窗 -->
+    <div id="essayDetailModal" class="modal">
+        <div class="modal-content wide" id="essayDetailContent">
+            <div style="text-align:center;padding:20px;color:#666;">加载中...</div>
         </div>
     </div>
-    
+
     <script>
-        let currentRuleId = null;
+        // ========== 认证守卫 ==========
         let authHeader = null;
+        let currentUser = null;
 
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const loginPanel = document.getElementById('loginPanel');
-        const loginInfo = document.getElementById('loginInfo');
-        const loginUserSpan = document.getElementById('loginUser');
-        const loginRoleSpan = document.getElementById('loginRole');
-        const registerTeacherLink = document.getElementById('registerTeacher');
-
-        async function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            if (!username || !password) {
-                alert('请先在右上角输入教师用户名和密码再登录');
-                return;
+        function getAuthHeader() {
+            const token = localStorage.getItem('jwt_token');
+            if (token) {
+                authHeader = 'Bearer ' + token;
+                return authHeader;
             }
-            try {
-                const resp = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await resp.json();
-                if (!resp.ok || !data.success) {
-                    alert('登录失败：' + (data.message || '用户名或密码错误'));
-                    return;
-                }
-                if (data.role !== 'TEACHER') {
-                    alert('登录失败：当前账号不是教师角色');
-                    return;
-                }
-                authHeader = 'Bearer ' + data.token;
-                loginUserSpan.textContent = data.displayName || data.username;
-                loginRoleSpan.textContent = data.role || '';
-                loginPanel.style.display = 'none';
-                loginInfo.style.display = 'block';
-                // 登录成功后自动加载作文列表
-                loadEssays();
-            } catch (e) {
-                alert('登录异常：' + e.message);
-            }
+            authHeader = null;
+            return null;
         }
 
         function logout() {
+            localStorage.removeItem('jwt_token');
             authHeader = null;
-            loginPanel.style.display = 'flex';
-            loginInfo.style.display = 'none';
-            document.getElementById('essaysTableBody').innerHTML = '';
-            document.getElementById('rulesTableBody').innerHTML = '';
-            document.getElementById('statsGrid').innerHTML = '';
+            currentUser = null;
+            window.location.href = 'index.html';
         }
 
-        loginBtn.addEventListener('click', login);
-        logoutBtn.addEventListener('click', logout);
-        registerTeacherLink.addEventListener('click', registerTeacher);
-
-        async function registerTeacher() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            if (!username || !password) {
-                alert('注册教师账号前，请填写右上角用户名和密码');
-                return;
-            }
-            const displayName = prompt('请输入教师姓名（将显示在右上角）：', username);
-            if (!displayName) {
-                alert('教师姓名不能为空');
-                return;
+        async function requireAuth() {
+            const token = localStorage.getItem('jwt_token');
+            if (!token) {
+                window.location.href = 'index.html';
+                return false;
             }
             try {
-                const resp = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username,
-                        password,
-                        role: 'TEACHER',
-                        displayName
-                    })
+                const resp = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
-                const data = await resp.json();
-                if (!resp.ok || !data.success) {
-                    alert('注册失败：' + (data.message || '未知错误'));
-                    return;
+                if (!resp.ok) {
+                    localStorage.removeItem('jwt_token');
+                    window.location.href = 'index.html';
+                    return false;
                 }
-                // 注册成功后自动登录
-                await login();
+                const data = await resp.json();
+                if (!data.authenticated) {
+                    localStorage.removeItem('jwt_token');
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                // 角色校验：只有 TEACHER 可以使用教师端
+                if (data.role !== 'TEACHER') {
+                    window.location.href = data.role === 'STUDENT' ? 'student.html' : 'index.html';
+                    return false;
+                }
+                currentUser = data;
+                authHeader = 'Bearer ' + token;
+                document.getElementById('authInfo').style.display = 'flex';
+                document.getElementById('loginUser').textContent = data.displayName || data.username;
+                document.getElementById('loginRole').textContent = '教师';
+                return true;
             } catch (e) {
-                alert('注册异常：' + e.message);
+                window.location.href = 'index.html';
+                return false;
             }
         }
-        
-        // 切换标签页
+
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        // ========== 通知 ==========
+        function showNotify(message, type) {
+            const el = document.getElementById('notify');
+            el.textContent = message;
+            el.className = 'notify ' + type;
+            setTimeout(() => { el.className = 'notify'; }, 4000);
+        }
+
+        // ========== 标签页切换 ==========
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
             document.getElementById(tabName).classList.add('active');
-            
-            if (tabName === 'essays') {
-                loadEssays();
-            } else if (tabName === 'rules') {
-                loadRules();
-            } else if (tabName === 'statistics') {
-                loadStatistics();
-            }
+
+            if (tabName === 'essays') loadEssays();
+            else if (tabName === 'rules') loadRulesConfig();
+            else if (tabName === 'statistics') loadStatistics();
         }
-        
-        // 加载作文列表
+
+        // ========== 加载作文列表 ==========
         async function loadEssays() {
             try {
                 const headers = {};
-                if (authHeader) {
-                    headers['Authorization'] = authHeader;
-                }
+                const h = getAuthHeader();
+                if (h) headers['Authorization'] = h;
+
                 const response = await fetch('/api/teacher/essays', { headers });
+                if (response.status === 401 || response.status === 403) {
+                    showNotify('登录已过期，请重新登录', 'error');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                    return;
+                }
                 const result = await response.json();
-                
+
                 if (result.success) {
                     const tbody = document.getElementById('essaysTableBody');
                     tbody.innerHTML = result.data.map(essay => `
@@ -518,6 +579,7 @@
                             <td>${new Date(essay.submitTime).toLocaleString()}</td>
                             <td>
                                 <button class="btn" onclick="viewEssay(${essay.id})">查看</button>
+                                <button class="btn btn-danger" onclick="deleteEssay(${essay.id}, '${essay.title.replace(/'/g, "\\'")}')">删除</button>
                             </td>
                         </tr>
                     `).join('');
@@ -526,57 +588,206 @@
                 console.error('加载作文失败:', error);
             }
         }
-        
-        // 加载评分规则
-        async function loadRules() {
+
+        // ========== 加载评分规则配置 ==========
+        const DIMENSION_CONFIG = {
+            content: {
+                label: '📝 内容', maxScore: 30, color: '#667eea',
+                options: ['主题明确突出','内容充实具体','观点正确积极','材料选择恰当','中心思想鲜明','情感真挚动人']
+            },
+            structure: {
+                label: '🏗️ 结构', maxScore: 25, color: '#764ba2',
+                options: ['层次清晰分明','逻辑严密连贯','开头引人入胜','结尾有力收束','段落过渡自然','详略得当']
+            },
+            language: {
+                label: '💬 语言', maxScore: 25, color: '#10b981',
+                options: ['表达准确流畅','用词恰当得体','语句通顺优美','修辞手法恰当','语法规范正确','标点使用正确']
+            },
+            creativity: {
+                label: '💡 创意', maxScore: 20, color: '#f59e0b',
+                options: ['立意新颖独特','角度与众不同','想象力丰富','见解独到深刻','表现手法创新','有个人风格']
+            }
+        };
+
+        let currentRulesData = {}; // {content: {weight, criteria}, structure: {...}, ...}
+
+        async function loadRulesConfig() {
+            const grade = document.getElementById('rulesGrade').value;
+            const essayType = document.getElementById('rulesEssayType').value;
+            if (!grade && !essayType) {
+                document.getElementById('rulesConfigCards').innerHTML = '<div style="text-align:center;padding:40px;color:#999;grid-column:1/-1;">请选择年级和文体后加载配置</div>';
+                return;
+            }
+
+            // 初始化默认值
+            currentRulesData = {};
+            ['content','structure','language','creativity'].forEach(dim => {
+                currentRulesData[dim] = { weight: DIMENSION_CONFIG[dim].maxScore / 100, criteria: [], enabled: true, ruleId: null };
+            });
+
+            // 从服务器加载已有规则
             try {
                 const headers = {};
-                if (authHeader) {
-                    headers['Authorization'] = authHeader;
+                const h = getAuthHeader();
+                if (h) headers['Authorization'] = h;
+                const resp = await fetch('/api/teacher/rules', { headers });
+                if (resp.ok) {
+                    const result = await resp.json();
+                    if (result.success) {
+                        const allRules = result.data || [];
+                        allRules.forEach(rule => {
+                            const dim = rule.dimension;
+                            if (!dim || !currentRulesData[dim]) return;
+                            // 匹配年级和文体
+                            const gMatch = !rule.applicableGrade || rule.applicableGrade === grade;
+                            const tMatch = !rule.applicableEssayType || rule.applicableEssayType === essayType;
+                            if (gMatch && tMatch) {
+                                currentRulesData[dim] = {
+                                    weight: rule.weight,
+                                    criteria: rule.criteria ? rule.criteria.split(/[,，、]/).map(s=>s.trim()).filter(Boolean) : [],
+                                    enabled: rule.enabled !== false,
+                                    ruleId: rule.id
+                                };
+                            }
+                        });
+                    }
                 }
-                const response = await fetch('/api/teacher/rules', { headers });
-                const result = await response.json();
-                
-                if (result.success) {
-                    const tbody = document.getElementById('rulesTableBody');
-                    tbody.innerHTML = result.data.map(rule => `
-                        <tr>
-                            <td>${rule.id}</td>
-                            <td>${rule.ruleName}</td>
-                            <td>${rule.applicableGrade || '全部'}</td>
-                            <td>${rule.applicableEssayType || '全部'}</td>
-                            <td>${rule.dimension}</td>
-                            <td>${rule.weight}</td>
-                            <td>
-                                <span class="badge ${rule.enabled ? 'enabled' : 'disabled'}">
-                                    ${rule.enabled ? '启用' : '禁用'}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn" onclick="editRule(${rule.id})">编辑</button>
-                                <button class="btn btn-success" onclick="toggleRule(${rule.id})">
-                                    ${rule.enabled ? '禁用' : '启用'}
-                                </button>
-                                <button class="btn btn-danger" onclick="deleteRule(${rule.id})">删除</button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('加载规则失败:', error);
+            } catch (e) { console.error('加载规则失败:', e); }
+
+            renderRulesCards();
+        }
+
+        function renderRulesCards() {
+            const container = document.getElementById('rulesConfigCards');
+            let html = '';
+            ['content','structure','language','creativity'].forEach(dim => {
+                const cfg = DIMENSION_CONFIG[dim];
+                const data = currentRulesData[dim] || { weight: cfg.maxScore/100, criteria: [], enabled: true };
+                const optionsHtml = cfg.options.map(opt => {
+                    const checked = data.criteria.includes(opt) ? 'checked' : '';
+                    return `<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:3px 0;">
+                        <input type="checkbox" value="${opt}" ${checked} onchange="updateCriteria('${dim}')" style="width:auto;accent-color:${cfg.color};">
+                        ${opt}
+                    </label>`;
+                }).join('');
+
+                html += `
+                <div style="border:1.5px solid #e5e7eb;border-radius:10px;padding:16px;background:#fafbff;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <h3 style="margin:0;color:${cfg.color};">${cfg.label} <span style="font-size:13px;color:#999;">满分${cfg.maxScore}分</span></h3>
+                        <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+                            <input type="checkbox" ${data.enabled ? 'checked' : ''} onchange="toggleDim('${dim}')" style="width:auto;">
+                            启用
+                        </label>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:12px;color:#666;">权重：<strong id="weight_${dim}">${(data.weight * 100).toFixed(1)}%</strong></label>
+                        <input type="range" min="5" max="50" step="0.5" value="${(data.weight * 100).toFixed(1)}"
+                            oninput="document.getElementById('weight_${dim}').textContent=this.value+'%';updateWeight('${dim}',this.value)"
+                            style="width:100%;accent-color:${cfg.color};" ${data.enabled ? '' : 'disabled'}>
+                    </div>
+                    <div style="max-height:180px;overflow-y:auto;">
+                        <label style="font-size:12px;color:#666;font-weight:bold;">评价标准（可多选）：</label>
+                        ${optionsHtml}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateCriteria(dim) {
+            const checked = [];
+            const container = document.getElementById('rulesConfigCards');
+            const card = container.children[['content','structure','language','creativity'].indexOf(dim)];
+            if (card) {
+                card.querySelectorAll('input[type="checkbox"][value]').forEach(cb => {
+                    if (cb.checked) checked.push(cb.value);
+                });
+            }
+            if (currentRulesData[dim]) currentRulesData[dim].criteria = checked;
+        }
+
+        function updateWeight(dim, pct) {
+            if (currentRulesData[dim]) currentRulesData[dim].weight = parseFloat(pct) / 100;
+        }
+
+        function toggleDim(dim) {
+            if (currentRulesData[dim]) {
+                currentRulesData[dim].enabled = !currentRulesData[dim].enabled;
+                renderRulesCards();
             }
         }
-        
-        // 加载统计数据
+
+        async function saveRulesConfig() {
+            const grade = document.getElementById('rulesGrade').value;
+            const essayType = document.getElementById('rulesEssayType').value;
+            if (!grade && !essayType) {
+                showNotify('请先选择年级和文体', 'error');
+                return;
+            }
+
+            // 先同步最新的 criteria 选中状态
+            ['content','structure','language','creativity'].forEach(dim => updateCriteria(dim));
+
+            let saved = 0, failed = 0;
+            for (const dim of ['content','structure','language','creativity']) {
+                const data = currentRulesData[dim];
+                if (!data) continue;
+
+                const body = {
+                    ruleName: DIMENSION_CONFIG[dim].label + '评分规则',
+                    applicableGrade: grade || null,
+                    applicableEssayType: essayType || null,
+                    dimension: dim,
+                    weight: data.weight,
+                    criteria: data.criteria.join('、') || DIMENSION_CONFIG[dim].options.slice(0, 2).join('、'),
+                    enabled: data.enabled
+                };
+
+                try {
+                    const headers = { 'Content-Type': 'application/json' };
+                    const h = getAuthHeader();
+                    if (h) headers['Authorization'] = h;
+
+                    const url = data.ruleId ? `/api/teacher/rules/${data.ruleId}` : '/api/teacher/rules';
+                    const method = data.ruleId ? 'PUT' : 'POST';
+                    const resp = await fetch(url, { method, headers, body: JSON.stringify(body) });
+                    const result = await resp.json();
+                    if (result.success) {
+                        saved++;
+                        // 更新 ruleId 以便下次更新
+                        if (result.data && result.data.id) data.ruleId = result.data.id;
+                    } else {
+                        failed++;
+                    }
+                } catch (e) {
+                    failed++;
+                }
+            }
+
+            if (failed === 0) {
+                showNotify(`配置保存成功！已保存 ${saved} 个维度的评分标准`, 'success');
+                // 同时刷新缓存的 ruleId
+                await loadRulesConfig();
+            } else {
+                showNotify(`保存完成：${saved} 个成功，${failed} 个失败`, 'error');
+            }
+        }
+
+        // ========== 加载统计数据 ==========
         async function loadStatistics() {
             try {
                 const headers = {};
-                if (authHeader) {
-                    headers['Authorization'] = authHeader;
-                }
+                const h = getAuthHeader();
+                if (h) headers['Authorization'] = h;
+
                 const response = await fetch('/api/teacher/statistics', { headers });
+                if (response.status === 401 || response.status === 403) {
+                    showNotify('登录已过期，请重新登录', 'error');
+                    return;
+                }
                 const result = await response.json();
-                
+
                 if (result.success) {
                     const stats = result.data;
                     document.getElementById('statsGrid').innerHTML = `
@@ -598,145 +809,204 @@
                 console.error('加载统计失败:', error);
             }
         }
-        
-        // 显示规则模态框
-        function showRuleModal(rule = null) {
-            currentRuleId = rule ? rule.id : null;
-            document.getElementById('modalTitle').textContent = rule ? '编辑评分规则' : '新增评分规则';
-            document.getElementById('ruleId').value = rule ? rule.id : '';
-            document.getElementById('ruleName').value = rule ? rule.ruleName : '';
-            document.getElementById('applicableGrade').value = rule ? (rule.applicableGrade || '') : '';
-            document.getElementById('applicableEssayType').value = rule ? (rule.applicableEssayType || '') : '';
-            document.getElementById('dimension').value = rule ? rule.dimension : 'content';
-            document.getElementById('weight').value = rule ? rule.weight : '0.25';
-            document.getElementById('criteria').value = rule ? rule.criteria : '';
-            document.getElementById('ruleModal').style.display = 'block';
-        }
-        
-        // 关闭规则模态框
-        function closeRuleModal() {
-            document.getElementById('ruleModal').style.display = 'none';
-            document.getElementById('ruleForm').reset();
-            currentRuleId = null;
-        }
-        
-        // 编辑规则
-        async function editRule(id) {
+
+
+        // ========== 查看作文详情（弹窗模式，支持手动改分） ==========
+        let currentViewEssayId = null;
+
+        async function viewEssay(essayId) {
+            currentViewEssayId = essayId;
+            const modal = document.getElementById('essayDetailModal');
+            const content = document.getElementById('essayDetailContent');
+            modal.style.display = 'block';
+            content.innerHTML = '<div style="text-align:center;padding:30px;color:#666;">加载中...</div>';
+
             try {
                 const headers = {};
-                if (authHeader) {
-                    headers['Authorization'] = authHeader;
+                const h = getAuthHeader();
+                if (h) headers['Authorization'] = h;
+
+                const resp = await fetch(`/api/student/essay/${essayId}/result`, { headers });
+                const result = await resp.json();
+                if (!resp.ok || !result.success) {
+                    content.innerHTML = `<div style="text-align:center;padding:30px;color:#dc2626;">${result.message || '服务器错误，请查看后端日志'}</div>`;
+                    return;
                 }
-                const response = await fetch('/api/teacher/rules', { headers });
-                const result = await response.json();
-                const rule = result.data.find(r => r.id === id);
-                if (rule) {
-                    showRuleModal(rule);
-                }
-            } catch (error) {
-                console.error('加载规则失败:', error);
+                const d = result.data;
+                // 旧数据可能没有评分，提供默认值
+                d.totalScore = d.totalScore || 0;
+                d.contentScore = d.contentScore || 0;
+                d.structureScore = d.structureScore || 0;
+                d.languageScore = d.languageScore || 0;
+                d.creativityScore = d.creativityScore || 0;
+                d.contentComment = d.contentComment || '';
+                d.structureComment = d.structureComment || '';
+                d.languageComment = d.languageComment || '';
+                d.creativityComment = d.creativityComment || '';
+                d.overallComment = d.overallComment || '';
+                d.feedbacks = d.feedbacks || [];
+                content.innerHTML = `
+                    <h2 style="margin-bottom:16px;">📄 作文详情 #${essayId}</h2>
+                    <div class="detail-section">
+                        <h3>基本信息</h3>
+                        <p><strong>标题：</strong>${d.title || ''}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h3>四维度得分（可手动修改）</h3>
+                        <div class="score-grid">
+                            <div class="mini-card">
+                                <div class="lbl">内容 / 30</div>
+                                <input class="score-edit-input" id="editContentScore" type="number" step="0.5" min="0" max="30" value="${d.contentScore.toFixed(1)}">
+                                <input class="comment-edit-input" id="editContentComment" placeholder="内容评语" value="${escapeHtml(d.contentComment || '')}">
+                            </div>
+                            <div class="mini-card">
+                                <div class="lbl">结构 / 25</div>
+                                <input class="score-edit-input" id="editStructureScore" type="number" step="0.5" min="0" max="25" value="${d.structureScore.toFixed(1)}">
+                                <input class="comment-edit-input" id="editStructureComment" placeholder="结构评语" value="${escapeHtml(d.structureComment || '')}">
+                            </div>
+                            <div class="mini-card">
+                                <div class="lbl">语言 / 25</div>
+                                <input class="score-edit-input" id="editLanguageScore" type="number" step="0.5" min="0" max="25" value="${d.languageScore.toFixed(1)}">
+                                <input class="comment-edit-input" id="editLanguageComment" placeholder="语言评语" value="${escapeHtml(d.languageComment || '')}">
+                            </div>
+                            <div class="mini-card">
+                                <div class="lbl">创意 / 20</div>
+                                <input class="score-edit-input" id="editCreativityScore" type="number" step="0.5" min="0" max="20" value="${d.creativityScore.toFixed(1)}">
+                                <input class="comment-edit-input" id="editCreativityComment" placeholder="创意评语" value="${escapeHtml(d.creativityComment || '')}">
+                            </div>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <label style="font-weight:bold;font-size:14px;">综合评语</label>
+                            <textarea class="comment-edit-input" id="editOverallComment" rows="3" style="width:100%;margin-top:4px;">${escapeHtml(d.overallComment || '')}</textarea>
+                        </div>
+                        <div style="margin-top:6px;font-size:12px;color:#999;">
+                            自动计算总分：<span id="calcTotal" style="font-weight:bold;color:#667eea;">${d.totalScore.toFixed(1)}</span>
+                        </div>
+                    </div>
+                    ${d.feedbacks && d.feedbacks.length > 0 ? `
+                    <div class="detail-section">
+                        <h3>改进建议</h3>
+                        ${d.feedbacks.map(f => `
+                            <div style="background:#f8f9fa;padding:12px;border-radius:6px;margin-bottom:8px;border-left:3px solid #667eea;">
+                                <strong>${f.feedbackType}</strong>
+                                <span class="badge" style="background:${f.severity==='高'?'#ff6b6b':f.severity==='中'?'#ffd93d':'#6bcf7f'};color:white;margin-left:8px;">${f.severity}</span>
+                                ${f.position ? `<span style="color:#999;margin-left:8px;">位置: ${f.position}</span>` : ''}
+                                <p style="margin-top:6px;">${f.issue}</p>
+                                <p style="color:#667eea;">💡 ${f.suggestion}</p>
+                                ${f.improvedExample ? `<p style="color:#16a34a;">✏️ 优化示例：${f.improvedExample}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    <div style="display:flex;justify-content:space-between;margin-top:20px;">
+                        <span style="color:#999;font-size:12px;">修改分数和评语后请点击保存</span>
+                        <div>
+                            <button class="btn" onclick="closeEssayDetail()">关闭</button>
+                            <button class="btn btn-success" onclick="saveScore()" style="margin-left:8px;">💾 保存修改</button>
+                        </div>
+                    </div>
+                `;
+
+                // 实时计算总分
+                ['ContentScore','StructureScore','LanguageScore','CreativityScore'].forEach(dim => {
+                    document.getElementById('edit'+dim).addEventListener('input', recalcTotal);
+                });
+
+            } catch (e) {
+                content.innerHTML = `<div style="text-align:center;padding:30px;color:#dc2626;">加载异常：${e.message}</div>`;
             }
         }
-        
-        // 保存规则
-        document.getElementById('ruleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const rule = {
-                ruleName: document.getElementById('ruleName').value,
-                applicableGrade: document.getElementById('applicableGrade').value || null,
-                applicableEssayType: document.getElementById('applicableEssayType').value || null,
-                dimension: document.getElementById('dimension').value,
-                weight: parseFloat(document.getElementById('weight').value),
-                criteria: document.getElementById('criteria').value,
-                enabled: true
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function recalcTotal() {
+            const v1 = parseFloat(document.getElementById('editContentScore')?.value) || 0;
+            const v2 = parseFloat(document.getElementById('editStructureScore')?.value) || 0;
+            const v3 = parseFloat(document.getElementById('editLanguageScore')?.value) || 0;
+            const v4 = parseFloat(document.getElementById('editCreativityScore')?.value) || 0;
+            const total = v1 + v2 + v3 + v4;
+            const el = document.getElementById('calcTotal');
+            if (el) el.textContent = total.toFixed(1);
+        }
+
+        async function saveScore() {
+            if (!currentViewEssayId) return;
+            const body = {
+                contentScore: parseFloat(document.getElementById('editContentScore').value),
+                structureScore: parseFloat(document.getElementById('editStructureScore').value),
+                languageScore: parseFloat(document.getElementById('editLanguageScore').value),
+                creativityScore: parseFloat(document.getElementById('editCreativityScore').value),
+                totalScore: parseFloat(document.getElementById('calcTotal').textContent),
+                contentComment: document.getElementById('editContentComment').value,
+                structureComment: document.getElementById('editStructureComment').value,
+                languageComment: document.getElementById('editLanguageComment').value,
+                creativityComment: document.getElementById('editCreativityComment').value,
+                overallComment: document.getElementById('editOverallComment').value
             };
-            
+
             try {
-                const url = currentRuleId 
-                    ? `/api/teacher/rules/${currentRuleId}`
-                    : '/api/teacher/rules';
-                const method = currentRuleId ? 'PUT' : 'POST';
-                
                 const headers = { 'Content-Type': 'application/json' };
-                if (authHeader) {
-                    headers['Authorization'] = authHeader;
-                }
-                const response = await fetch(url, {
-                    method: method,
-                    headers,
-                    body: JSON.stringify(rule)
+                const h = getAuthHeader();
+                if (h) headers['Authorization'] = h;
+
+                const resp = await fetch(`/api/teacher/essay/${currentViewEssayId}/score`, {
+                    method: 'PUT', headers, body: JSON.stringify(body)
                 });
-                
-                const result = await response.json();
+                const result = await resp.json();
                 if (result.success) {
-                    closeRuleModal();
-                    loadRules();
+                    showNotify('评分修改已保存', 'success');
+                    closeEssayDetail();
+                    loadEssays();
                 } else {
-                    alert('保存失败: ' + result.message);
+                    showNotify('保存失败: ' + (result.message || ''), 'error');
                 }
-            } catch (error) {
-                alert('保存失败: ' + error.message);
-            }
-        });
-        
-        // 切换规则状态
-        async function toggleRule(id) {
-            try {
-                const headers = {};
-                if (authHeader) {
-                    headers['Authorization'] = authHeader;
-                }
-                const response = await fetch(`/api/teacher/rules/${id}/toggle`, {
-                    method: 'PUT',
-                    headers
-                });
-                const result = await response.json();
-                if (result.success) {
-                    loadRules();
-                }
-            } catch (error) {
-                console.error('操作失败:', error);
+            } catch (e) {
+                showNotify('保存异常: ' + e.message, 'error');
             }
         }
-        
-        // 删除规则
-        async function deleteRule(id) {
-            if (!confirm('确定要删除这条规则吗？')) return;
-            
-            try {
-                const headers = {};
-                if (authHeader) {
-                    headers['Authorization'] = authHeader;
-                }
-                const response = await fetch(`/api/teacher/rules/${id}`, {
-                    method: 'DELETE',
-                    headers
-                });
-                const result = await response.json();
-                if (result.success) {
-                    loadRules();
-                }
-            } catch (error) {
-                console.error('删除失败:', error);
-            }
+
+        function closeEssayDetail() {
+            document.getElementById('essayDetailModal').style.display = 'none';
+            currentViewEssayId = null;
         }
-        
-        // 查看作文详情
-        function viewEssay(id) {
-            window.open(`/student.html?essayId=${id}`, '_blank');
-        }
-        
-        // 初始化
-        loadEssays();
-        
+
         // 点击模态框外部关闭
         window.onclick = function(event) {
-            const modal = document.getElementById('ruleModal');
-            if (event.target === modal) {
-                closeRuleModal();
+            if (event.target === document.getElementById('essayDetailModal')) closeEssayDetail();
+        }
+
+        // ========== 删除作文 ==========
+        async function deleteEssay(id, title) {
+            if (!confirm(`确定要删除作文「${title}」吗？\n\n此操作会同时删除评分和反馈，不可恢复。`)) return;
+
+            try {
+                const headers = {};
+                const h = getAuthHeader();
+                if (h) headers['Authorization'] = h;
+
+                const resp = await fetch(`/api/teacher/essay/${id}`, { method: 'DELETE', headers });
+                const result = await resp.json();
+                if (result.success) {
+                    showNotify('作文已删除', 'success');
+                    loadEssays();
+                } else {
+                    showNotify('删除失败: ' + (result.message || ''), 'error');
+                }
+            } catch (e) {
+                showNotify('删除异常: ' + e.message, 'error');
             }
         }
+
+        // ========== 初始化 ==========
+        (async function init() {
+            const authed = await requireAuth();
+            if (!authed) return;
+            loadEssays();
+        })();
     </script>
 </body>
 </html>

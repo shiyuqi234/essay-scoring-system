@@ -1,6 +1,7 @@
 package com.study.ai.essayscoring.controller;
 
 import com.study.ai.essayscoring.config.JwtService;
+import com.study.ai.essayscoring.dto.ApiResponse;
 import com.study.ai.essayscoring.dto.LoginRequest;
 import com.study.ai.essayscoring.dto.RegisterRequest;
 import com.study.ai.essayscoring.entity.UserAccount;
@@ -16,8 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 认证与用户管理接口（注册 + JWT 登录）
@@ -25,7 +24,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${app.cors.allowed-origins:http://localhost:8080}")
 public class AuthController {
 
     private final UserAccountRepository userAccountRepository;
@@ -37,12 +36,9 @@ public class AuthController {
      * 用户注册
      */
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
-        Map<String, Object> resp = new HashMap<>();
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {
         if (userAccountRepository.findByUsername(request.getUsername()).isPresent()) {
-            resp.put("success", false);
-            resp.put("message", "用户名已存在");
-            return ResponseEntity.badRequest().body(resp);
+            return ResponseEntity.badRequest().body(ApiResponse.error("用户名已存在"));
         }
 
         UserAccount account = new UserAccount();
@@ -55,55 +51,43 @@ public class AuthController {
 
         userAccountRepository.save(account);
 
-        resp.put("success", true);
-        resp.put("message", "注册成功");
-        return ResponseEntity.ok(resp);
+        return ResponseEntity.ok(ApiResponse.success("注册成功", null));
     }
 
     /**
      * 登录（用户名 + 密码，返回 JWT）
      */
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
-        Map<String, Object> resp = new HashMap<>();
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         UserAccount account = userAccountRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
 
         String token = jwtService.generateToken(account);
 
-        resp.put("success", true);
-        resp.put("token", token);
-        resp.put("username", account.getUsername());
-        resp.put("role", account.getRole().name());
-        resp.put("displayName", account.getDisplayName());
-        resp.put("studentId", account.getStudentId());
-        return ResponseEntity.ok(resp);
+        return ResponseEntity.ok(ApiResponse.loginSuccess(
+                token, account.getUsername(), account.getRole().name(),
+                account.getDisplayName(), account.getStudentId()));
     }
 
     /**
      * 登录状态检查（基于 JWT）
      */
     @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> me(Principal principal) {
-        Map<String, Object> resp = new HashMap<>();
+    public ResponseEntity<ApiResponse> me(Principal principal) {
         if (principal == null) {
-            resp.put("authenticated", false);
-            return ResponseEntity.ok(resp);
+            return ResponseEntity.ok(ApiResponse.authStatus(false, null, null, null, null));
         }
         UserAccount account = userAccountRepository.findByUsername(principal.getName())
                 .orElse(null);
-        resp.put("authenticated", true);
-        resp.put("username", principal.getName());
-        if (account != null) {
-            resp.put("role", account.getRole().name());
-            resp.put("displayName", account.getDisplayName());
-            resp.put("studentId", account.getStudentId());
-        }
-        return ResponseEntity.ok(resp);
+        return ResponseEntity.ok(ApiResponse.authStatus(
+                true, principal.getName(),
+                account != null ? account.getRole().name() : null,
+                account != null ? account.getDisplayName() : null,
+                account != null ? account.getStudentId() : null));
     }
 }
-

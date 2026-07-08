@@ -22,3 +22,31 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# ===== 数据库文件（包含敏感数据，禁止提交）=====
+**/*.mv.db
+**/*.trace.db
+data/
+
+# ===== 环境变量文件（包含密钥）=====
+.env
+.env.local
+.env.*.local
+
+# ===== IDE 配置文件 =====
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== OS 生成文件 =====
+.DS_Store
+Thumbs.db
+
+# ===== 构建输出 =====
+target/
+build/
+out/
+*.class

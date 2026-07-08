@@ -1,18 +1,23 @@
 server:
   port: 8080
 
+# 应用自定义配置
+app:
+  cors:
+    # 允许的前端来源（多个用逗号分隔），生产环境请改为具体域名
+    allowed-origins: ${CORS_ORIGINS:http://localhost:8080}
+
 spring:
   application:
     name: essay-scoring-system
   
-  # 数据源配置（已切换为 MySQL）
-  # 注意：请先创建 MySQL 数据库 essayscoring，然后修改下面的用户名和密码
+  # 数据源配置（H2 文件数据库 — 数据持久化到磁盘，重启不丢失）
   datasource:
-    url: jdbc:mysql://localhost:3306/essayscoring?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root        # TODO: 修改为你的 MySQL 用户名
-    password: 123456789   # TODO: 修改为你的 MySQL 密码
-  
+    url: jdbc:h2:file:./data/essayscoring;MODE=MySQL;AUTO_RECONNECT=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
   # JPA配置
   jpa:
     hibernate:
@@ -20,42 +25,32 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
+
+  # H2 控制台（开发调试用）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   
-  # H2 控制台配置（已禁用，因为使用 MySQL）
-  # h2:
-  #   console:
-  #     enabled: false
-  
-  # H2 数据库配置（已切换到 MySQL，如需使用 H2，请取消注释下面的配置并注释掉上面的 MySQL 配置）
-  # datasource:
-  #   url: jdbc:h2:file:./data/essayscoring
-  #   driver-class-name: org.h2.Driver
-  #   username: sa
-  #   password: 
-  # jpa:
-  #   properties:
-  #     hibernate:
-  #       dialect: org.hibernate.dialect.H2Dialect
-  
-  # 阿里云百炼平台配置 (Spring AI DashScope)
+  # DeepSeek API 配置
   cloud:
     ai:
-      dashscope:
-        # API Key - 请替换为您的阿里云百炼平台API Key
-        api-key: ${DASHSCOPE_API_KEY:sk-dafb689c85a34f68a50bb2ec3bb31ffd}
+      deepseek:
+        # API Key - 从环境变量 DEEPSEEK_API_KEY 获取
+        api-key: ${DEEPSEEK_API_KEY:your-api-key-here}
         # 模型配置
         chat:
           options:
-            model: qwen3-max
+            model: deepseek-chat
             temperature: 0.3
             max-tokens: 2000
 
 # JWT 配置
 jwt:
-  # 请修改为更长的随机字符串，并以 Base64 形式存储
-  secret: c29tZS1sb25nLXNlY3JldC1rZXktZm9yLWVzc2F5LXNjb3Jpbmc=  # "some-long-secret-key-for-essay-scoring" 的 Base64
+  # JWT 签名密钥（Base64 编码），通过环境变量注入，默认值仅用于本地开发
+  secret: ${JWT_SECRET:c29tZS1sb25nLXNlY3JldC1rZXktZm9yLWVzc2F5LXNjb3Jpbmc=}
   expiration-ms: 86400000   # 24 小时
 
 # 日志配置

@@ -104,7 +104,7 @@ public class Essay {
             submitTime = LocalDateTime.now();
         }
         if (wordCount == null && content != null) {
-            wordCount = content.length();
+            wordCount = countCharacters(content);
         }
     }
     
@@ -112,7 +112,21 @@ public class Essay {
     protected void onUpdate() {
         updateTime = LocalDateTime.now();
         if (wordCount == null && content != null) {
-            wordCount = content.length();
+            wordCount = countCharacters(content);
         }
+    }
+
+    /**
+     * 统计有效中文字数（排除空格、换行等空白字符）
+     */
+    private static int countCharacters(String text) {
+        if (text == null) return 0;
+        int count = 0;
+        for (char c : text.toCharArray()) {
+            if (!Character.isWhitespace(c)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

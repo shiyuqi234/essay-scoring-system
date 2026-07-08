@@ -33,7 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String contextPath = request.getContextPath();
         String requestPath = path.startsWith(contextPath) ? path.substring(contextPath.length()) : path;
         
-        if (requestPath.startsWith("/h2-console") || requestPath.startsWith("/api/auth") || requestPath.startsWith("/test")) {
+        // 跳过 H2 控制台和测试接口（不需要 JWT 处理）
+        // 注意：不跳过 /api/auth，因为 /api/auth/me 需要 JWT 来解析当前用户
+        // /api/auth/login 和 /api/auth/register 虽在 permitAll 列表中，
+        // 但请求不携带 JWT，过滤器会自然放行，不会有副作用
+        if (requestPath.startsWith("/h2-console") || requestPath.startsWith("/test")) {
             filterChain.doFilter(request, response);
             return;
         }

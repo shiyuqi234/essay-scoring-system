@@ -1,6 +1,537 @@
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能作文评分系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            display: flex;
+            width: 800px;
+            min-height: 520px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* 左侧品牌区 */
+        .brand {
+            flex: 1;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .brand .icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+
+        .brand h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .brand p {
+            font-size: 14px;
+            opacity: 0.85;
+            line-height: 1.7;
+        }
+
+        .brand .features {
+            margin-top: 24px;
+            font-size: 13px;
+            opacity: 0.8;
+            line-height: 2;
+        }
+
+        /* 右侧表单区 */
+        .form-panel {
+            flex: 1;
+            padding: 40px 35px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 选项卡 */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 28px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #9ca3af;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .tab.active {
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+
+        /* 表单 */
+        .form {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .form.active {
+            display: flex;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* 角色选择 */
+        .role-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .role-option {
+            flex: 1;
+            padding: 10px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: #fff;
+            color: #6b7280;
+        }
+
+        .role-option:hover {
+            border-color: #a78bfa;
+        }
+
+        .role-option.selected {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        /* 消息提示 */
+        .message {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.error {
+            display: block;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .message.success {
+            display: block;
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 加载状态 */
+        .loading-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 提示文字 */
+        .hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 850px) {
+            .container {
+                flex-direction: column;
+                width: 95%;
+                min-height: auto;
+            }
+            .brand {
+                padding: 24px 20px;
+            }
+            .brand .icon {
+                width: 56px;
+                height: 56px;
+                font-size: 28px;
+            }
+            .brand h1 {
+                font-size: 20px;
+            }
+            .brand .features {
+                display: none;
+            }
+            .form-panel {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
 <body>
-<h1>hello word!!!</h1>
-<p>this is a html page</p>
+
+<div class="container">
+    <!-- 左侧品牌区 -->
+    <div class="brand">
+        <div class="icon">&#9997;&#65039;</div>
+        <h1>智能作文评分系统</h1>
+        <p>基于 AI 大模型的<br>作文智能评分与反馈平台</p>
+        <div class="features">
+            ✨ 四维度智能评分<br>
+            📝 结构化改进建议<br>
+            📊 雷达图可视化展示<br>
+            👨‍🏫 教师端规则管理
+        </div>
+    </div>
+
+    <!-- 右侧表单区 -->
+    <div class="form-panel">
+        <!-- 选项卡 -->
+        <div class="tabs">
+            <button class="tab active" id="tabLogin" onclick="switchTab('login')">登录</button>
+            <button class="tab" id="tabRegister" onclick="switchTab('register')">注册</button>
+        </div>
+
+        <!-- 消息 -->
+        <div class="message" id="msg"></div>
+
+        <!-- 登录表单 -->
+        <form class="form active" id="formLogin" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="loginUsername">用户名</label>
+                <input type="text" id="loginUsername" placeholder="请输入用户名" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">密码</label>
+                <input type="password" id="loginPassword" placeholder="请输入密码" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="loginBtn">登录</button>
+            <p class="hint">演示账号：student1 / 123456（学生）&emsp;teacher1 / 123456（教师）</p>
+        </form>
+
+        <!-- 注册表单 -->
+        <form class="form" id="formRegister" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>角色</label>
+                <div class="role-group">
+                    <div class="role-option selected" data-role="STUDENT" onclick="selectRole('STUDENT', this)">🎓 学生</div>
+                    <div class="role-option" data-role="TEACHER" onclick="selectRole('TEACHER', this)">👨‍🏫 教师</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="regUsername">用户名</label>
+                <input type="text" id="regUsername" placeholder="4-20位字母或数字" autocomplete="off" required>
+            </div>
+            <div class="form-group">
+                <label for="regPassword">密码</label>
+                <input type="password" id="regPassword" placeholder="至少6位" autocomplete="new-password" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label for="regDisplayName">显示姓名</label>
+                <input type="text" id="regDisplayName" placeholder="请输入姓名" autocomplete="off" required>
+            </div>
+            <div class="form-group" id="studentIdGroup">
+                <label for="regStudentId">学号</label>
+                <input type="text" id="regStudentId" placeholder="请输入学号" autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-primary" id="registerBtn">注册</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ========== 状态 ==========
+    let selectedRole = 'STUDENT';
+
+    // ========== 初始化 ==========
+    (async function init() {
+        // 如果已有 token，尝试验证并直接跳转
+        const token = localStorage.getItem('jwt_token');
+        if (!token) return;
+
+        try {
+            const resp = await fetch('/api/auth/me', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.authenticated) {
+                    redirectByRole(data.role);
+                }
+            }
+        } catch (e) {
+            // token 无效，清除并留在当前页
+            localStorage.removeItem('jwt_token');
+        }
+    })();
+
+    // ========== 选项卡切换 ==========
+    function switchTab(tab) {
+        const isLogin = tab === 'login';
+        document.getElementById('tabLogin').classList.toggle('active', isLogin);
+        document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+        document.getElementById('formLogin').classList.toggle('active', isLogin);
+        document.getElementById('formRegister').classList.toggle('active', !isLogin);
+        hideMessage();
+    }
+
+    // ========== 角色选择 ==========
+    function selectRole(role, el) {
+        selectedRole = role;
+        document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+
+        // 学生显示学号字段，教师隐藏
+        const studentIdGroup = document.getElementById('studentIdGroup');
+        studentIdGroup.style.display = role === 'STUDENT' ? 'flex' : 'none';
+        if (role === 'TEACHER') {
+            document.getElementById('regStudentId').value = '';
+        }
+    }
+
+    // ========== 消息 ==========
+    function showMessage(text, type) {
+        const msg = document.getElementById('msg');
+        msg.textContent = text;
+        msg.className = 'message ' + type;
+    }
+
+    function hideMessage() {
+        const msg = document.getElementById('msg');
+        msg.className = 'message';
+        msg.textContent = '';
+    }
+
+    // ========== 登录 ==========
+    async function handleLogin(e) {
+        e.preventDefault();
+        hideMessage();
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-text"><span class="spinner"></span>登录中...</span>';
+
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const resp = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok && data.success) {
+                localStorage.setItem('jwt_token', data.token);
+                showMessage('登录成功，正在跳转...', 'success');
+                setTimeout(() => redirectByRole(data.role), 500);
+            } else {
+                showMessage(data.message || '登录失败', 'error');
+            }
+        } catch (err) {
+            showMessage('网络错误，请检查后端是否启动', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '登录';
+        }
+    }
+
+    // ========== 注册 ==========
+    async function handleRegister(e) {
+        e.preventDefault();
+        hideMessage();
+        const btn = document.getElementById('registerBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-text"><span class="spinner"></span>注册中...</span>';
+
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const displayName = document.getElementById('regDisplayName').value.trim();
+        const studentId = document.getElementById('regStudentId').value.trim();
+
+        if (password.length < 6) {
+            showMessage('密码至少6位', 'error');
+            btn.disabled = false;
+            btn.textContent = '注册';
+            return;
+        }
+
+        const body = {
+            username,
+            password,
+            role: selectedRole,
+            displayName: displayName || username
+        };
+
+        if (selectedRole === 'STUDENT') {
+            body.studentId = studentId || '';
+        }
+
+        try {
+            const resp = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok && data.success) {
+                showMessage('注册成功！请切换到登录标签页登录', 'success');
+                // 清空表单
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regDisplayName').value = '';
+                document.getElementById('regStudentId').value = '';
+                // 自动切换到登录
+                setTimeout(() => switchTab('login'), 800);
+            } else {
+                showMessage(data.message || '注册失败', 'error');
+            }
+        } catch (err) {
+            showMessage('网络错误，请检查后端是否启动', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '注册';
+        }
+    }
+
+    // ========== 角色跳转 ==========
+    function redirectByRole(role) {
+        if (role === 'TEACHER') {
+            window.location.href = 'teacher.html';
+        } else {
+            window.location.href = 'student.html';
+        }
+    }
+</script>
+
 </body>
 </html>
