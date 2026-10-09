@@ -5,6 +5,7 @@ import com.study.ai.essayscoring.dto.ApiResponse;
 import com.study.ai.essayscoring.dto.LoginRequest;
 import com.study.ai.essayscoring.dto.RegisterRequest;
 import com.study.ai.essayscoring.entity.UserAccount;
+import com.study.ai.essayscoring.entity.UserRole;
 import com.study.ai.essayscoring.repository.UserAccountRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -44,8 +46,8 @@ public class AuthController {
         UserAccount account = new UserAccount();
         account.setUsername(request.getUsername());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
-        account.setRole(request.getRole());
-        account.setStudentId(request.getRole().name().equals("STUDENT") ? request.getStudentId() : null);
+        account.setRole(UserRole.STUDENT);          // ← 服务端强制，不读客户端
+        account.setStudentId(request.getStudentId());
         account.setDisplayName(request.getDisplayName());
         account.setEnabled(true);
 
@@ -65,7 +67,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserAccount account = userAccountRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+                .orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
 
         String token = jwtService.generateToken(account);
 

@@ -3,10 +3,12 @@ package com.study.ai.essayscoring.controller;
 import com.study.ai.essayscoring.dto.ApiResponse;
 import com.study.ai.essayscoring.dto.ScoreUpdateRequest;
 import com.study.ai.essayscoring.dto.ScoringResultDTO;
-import com.study.ai.essayscoring.entity.Essay;
+import com.study.ai.essayscoring.dto.ScoringRuleRequest;
+import com.study.ai.essayscoring.dto.EssaySummaryDTO;
 import com.study.ai.essayscoring.entity.ScoringRule;
 import com.study.ai.essayscoring.service.EssayService;
 import com.study.ai.essayscoring.service.ScoringRuleService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +34,7 @@ public class TeacherController {
      */
     @GetMapping("/essays")
     public ResponseEntity<ApiResponse> getAllEssays() {
-        List<Essay> essays = essayService.getAllEssays();
+        List<EssaySummaryDTO> essays = essayService.getAllEssays();
         return ResponseEntity.ok(ApiResponse.successWithCount(essays, essays.size()));
     }
 
@@ -46,20 +48,21 @@ public class TeacherController {
     }
 
     /**
-     * 创建评分规则
+     * 创建评分规则（收 DTO，不直接收实体，防过度绑定）
      */
     @PostMapping("/rules")
-    public ResponseEntity<ApiResponse> createRule(@RequestBody ScoringRule rule) {
-        ScoringRule created = scoringRuleService.createRule(rule);
+    public ResponseEntity<ApiResponse> createRule(@Valid @RequestBody ScoringRuleRequest req) {
+        ScoringRule created = scoringRuleService.createRule(req);
         return ResponseEntity.ok(ApiResponse.success("评分规则创建成功", created));
     }
 
     /**
-     * 更新评分规则
+     * 更新评分规则（收 DTO）
      */
     @PutMapping("/rules/{id}")
-    public ResponseEntity<ApiResponse> updateRule(@PathVariable Long id, @RequestBody ScoringRule rule) {
-        ScoringRule updated = scoringRuleService.updateRule(id, rule);
+    public ResponseEntity<ApiResponse> updateRule(@PathVariable Long id,
+                                                  @Valid @RequestBody ScoringRuleRequest req) {
+        ScoringRule updated = scoringRuleService.updateRule(id, req);
         return ResponseEntity.ok(ApiResponse.success("评分规则更新成功", updated));
     }
 
@@ -83,28 +86,22 @@ public class TeacherController {
     }
 
     /**
-     * 获取统计信息
+     * 获取统计信息 —— 下推到数据库聚合，避免全表扫描 + 内存遍历。
      */
     @GetMapping("/statistics")
     public ResponseEntity<ApiResponse> getStatistics() {
-        List<Essay> essays = essayService.getAllEssays();
+        Object[] row = essayService.getStatistics();
 
-        long totalEssays = essays.size();
-        long totalStudents = essays.stream()
-                .map(Essay::getStudentId)
-                .distinct()
-                .count();
-
-        double avgScore = essays.stream()
-                .filter(e -> e.getScore() != null && e.getScore().getTotalScore() != null)
-                .mapToDouble(e -> e.getScore().getTotalScore())
-                .average()
-                .orElse(0.0);
+        long totalEssays = row[0] != null ? ((Number) row[0]).longValue() : 0L;
+        long totalStudents = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+        double avgScore = row[2] != null
+                ? Math.round(((Number) row[2]).doubleValue() * 100.0) / 100.0
+                : 0.0;
 
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalEssays", totalEssays);
         stats.put("totalStudents", totalStudents);
-        stats.put("averageScore", Math.round(avgScore * 100.0) / 100.0);
+        stats.put("averageScore", avgScore);
 
         return ResponseEntity.ok(ApiResponse.success(stats));
     }

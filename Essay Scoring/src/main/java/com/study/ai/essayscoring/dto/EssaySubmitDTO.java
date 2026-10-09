@@ -12,9 +12,6 @@ public class EssaySubmitDTO {
     @NotBlank(message = "学生姓名不能为空")
     private String studentName;
     
-    @NotBlank(message = "学生ID不能为空")
-    private String studentId;
-    
     @NotBlank(message = "作文标题不能为空")
     private String title;
     

@@ -6,6 +6,7 @@ import com.study.ai.essayscoring.entity.Essay;
 import com.study.ai.essayscoring.entity.Feedback;
 import com.study.ai.essayscoring.entity.Score;
 import com.study.ai.essayscoring.entity.ScoringRule;
+import com.study.ai.essayscoring.exception.TruncatedResponseException;
 import com.study.ai.essayscoring.repository.ScoringRuleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,56 +40,65 @@ public class AIScoringService {
         {"创意", "20", "立意是否新颖独特、角度是否与众不同、想象力是否丰富、有无独到见解"}
     };
 
+    /** 各维度满分 —— 与 DEFAULT_DIMENSIONS 保持一致，避免两处硬编码不一致 */
+    private static final double MAX_CONTENT    = 30.0;
+    private static final double MAX_STRUCTURE  = 25.0;
+    private static final double MAX_LANGUAGE   = 25.0;
+    private static final double MAX_CREATIVITY = 20.0;
+
     // ──────── 评分 + 反馈（合并为一次调用）────────
 
     /**
-     * 评分结果复合对象（Score + List<Feedback>），避免线程安全问题
+     * 评分结果复合对象（Score + List<Feedback> + error），避免线程安全问题。
+     * error == null 表示成功；错误随返回值传递，不落任何实例状态。
      */
     public static class ScoringResult {
         private final Score score;
         private final List<Feedback> feedbacks;
+        private final String error;
 
         public ScoringResult(Score score, List<Feedback> feedbacks) {
+            this(score, feedbacks, null);
+        }
+
+        public ScoringResult(Score score, List<Feedback> feedbacks, String error) {
             this.score = score;
             this.feedbacks = feedbacks;
+            this.error = error;
         }
 
         public Score getScore() { return score; }
         public List<Feedback> getFeedbacks() { return feedbacks; }
+        public String getError() { return error; }
+        public boolean isSuccess() { return error == null; }
     }
-
-    // 上一次 AI 调用的错误信息（供诊断用）
-    private volatile String lastError = null;
-
-    public String getLastError() { return lastError; }
 
     public ScoringResult scoreEssay(Essay essay) {
         log.info("AI评分开始，essayId={}", essay.getId());
         try {
             String prompt = buildUnifiedPrompt(essay);
             log.info("Prompt构建完成 ({} 字符)，准备调用 ChatClient...", prompt.length());
-            String aiResponse = chatClient.call(prompt);
+
+            String aiResponse;
+            try {
+                aiResponse = chatClient.call(prompt);
+            } catch (TruncatedResponseException te) {
+                // ★ 截断是可重试的：加大预算或直接重试一次
+                log.warn("输出被截断，重试一次。essayId={}", essay.getId());
+                aiResponse = chatClient.call(prompt);
+            }
             log.info("AI响应长度: {} 字符", aiResponse != null ? aiResponse.length() : 0);
 
-            ScoringResult result = parseUnifiedResponse(aiResponse, essay);
-            lastError = null;
-            return result;
+            return parseUnifiedResponse(aiResponse, essay);
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg == null) msg = e.getClass().getSimpleName();
-            // 递归取根因
-            Throwable root = e;
-            while (root.getCause() != null && root.getCause() != root) {
-                root = root.getCause();
-            }
-            String rootMsg = root.getMessage() != null ? root.getMessage() : root.getClass().getSimpleName();
-            lastError = msg + " | 根因: " + rootMsg;
-            log.error("AI评分失败: {}", lastError, e);
+            String rootMsg = rootCauseMessage(e);
+            log.error("AI评分失败: {}", rootMsg, e);
             List<Feedback> fallbackFeedbacks = createFallbackFeedbacks(essay);
             Score fallback = createFallbackScore(essay);
             // 把错误信息写入综合评语，让用户能看到
-            fallback.setOverallComment("【AI调用失败，以下为降级评分】\n错误原因：" + lastError + "\n\n" + fallback.getOverallComment());
-            return new ScoringResult(fallback, fallbackFeedbacks);
+            fallback.setOverallComment("【AI调用失败，以下为降级评分】\n错误原因：" + rootMsg + "\n\n" + fallback.getOverallComment());
+            // ★ 错误随返回值传递，不落任何实例状态
+            return new ScoringResult(fallback, fallbackFeedbacks, rootMsg);
         }
     }
 
@@ -185,15 +195,16 @@ public class AIScoringService {
             // 提取 JSON 块（AI 可能在 JSON 外包裹说明文字）
             String json = extractJson(aiResponse);
             JsonNode root = objectMapper.readTree(json);
+            Long eid = essay.getId();
 
             Score score = new Score();
             score.setEssay(essay);
             score.setModelVersion(modelVersion);
 
-            score.setContentScore(getDouble(root, "contentScore", 20.0));
-            score.setStructureScore(getDouble(root, "structureScore", 18.0));
-            score.setLanguageScore(getDouble(root, "languageScore", 18.0));
-            score.setCreativityScore(getDouble(root, "creativityScore", 15.0));
+            score.setContentScore(clampScore(getDouble(root, "contentScore", 20.0), MAX_CONTENT, "content", eid));
+            score.setStructureScore(clampScore(getDouble(root, "structureScore", 18.0), MAX_STRUCTURE, "structure", eid));
+            score.setLanguageScore(clampScore(getDouble(root, "languageScore", 18.0), MAX_LANGUAGE, "language", eid));
+            score.setCreativityScore(clampScore(getDouble(root, "creativityScore", 15.0), MAX_CREATIVITY, "creativity", eid));
             score.setContentComment(getString(root, "contentComment", "内容方面有待提升"));
             score.setStructureComment(getString(root, "structureComment", "结构方面可以优化"));
             score.setLanguageComment(getString(root, "languageComment", "语言表达可以更流畅"));
@@ -221,11 +232,24 @@ public class AIScoringService {
                 }
             }
 
+            // ★ 校验 feedbacks：空则兜底；缺「亮点表扬」只记日志不强行补
+            if (feedbacks.isEmpty()) {
+                log.warn("模型未返回任何 feedback，使用兜底反馈。essayId={}", eid);
+                feedbacks = createFallbackFeedbacks(essay);
+            } else if (feedbacks.stream().noneMatch(f -> "亮点表扬".equals(f.getFeedbackType()))) {
+                log.warn("模型未返回「亮点表扬」，与 Prompt 约束不符。essayId={}", eid);
+            }
+
             return new ScoringResult(score, feedbacks);
 
         } catch (Exception e) {
-            log.error("解析AI响应失败，使用降级分数。原始响应: {}", aiResponse, e);
-            return new ScoringResult(createFallbackScore(essay), createFallbackFeedbacks(essay));
+            String rootMsg = rootCauseMessage(e);
+            // ★ 不打印完整响应 —— 响应里含学生作文原文，只打长度 + 前 200 字符摘要
+            log.error("解析AI响应失败，使用降级分数。响应长度: {}，前 200 字符: {}",
+                    aiResponse != null ? aiResponse.length() : 0,
+                    aiResponse != null && aiResponse.length() > 200
+                            ? aiResponse.substring(0, 200) + "..." : aiResponse, e);
+            return new ScoringResult(createFallbackScore(essay), createFallbackFeedbacks(essay), rootMsg);
         }
     }
 
@@ -248,6 +272,33 @@ public class AIScoringService {
         JsonNode val = node.get(key);
         if (val != null && val.isTextual()) return val.asText();
         return defaultVal;
+    }
+
+    /**
+     * 把分数裁剪到 [0, max]。
+     * ★ 发生裁剪时打 WARN —— 越界本身是信号，说明 Prompt 或模型有问题，不应被静默修正。
+     */
+    private double clampScore(double value, double max, String dimension, Long essayId) {
+        if (Double.isNaN(value)) {
+            log.warn("分数为 NaN，按 0 处理。essayId={}, dimension={}", essayId, dimension);
+            return 0.0;
+        }
+        if (value < 0 || value > max) {
+            log.warn("分数越界已裁剪。essayId={}, dimension={}, 原值={}, 上限={}",
+                    essayId, dimension, value, max);
+            return Math.max(0.0, Math.min(max, value));
+        }
+        return value;
+    }
+
+    private String rootCauseMessage(Throwable e) {
+        Throwable root = e;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        String m = e.getMessage();
+        String r = root.getMessage() != null ? root.getMessage() : root.getClass().getSimpleName();
+        return (m != null ? m : e.getClass().getSimpleName()) + " | 根因: " + r;
     }
 
     // ──────── 降级方案 ────────

@@ -3,6 +3,7 @@ package com.study.ai.essayscoring.config;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.study.ai.essayscoring.exception.TruncatedResponseException;
 import com.study.ai.essayscoring.service.ChatClient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -41,15 +44,28 @@ public class AIConfig {
 
     /**
      * 创建ChatClient Bean
-     * 使用 DeepSeek OpenAI 兼容 API
+     * 使用 DeepSeek OpenAI 兼容 API。
+     *
+     * 关键：用 Profile 显式声明意图，而不是用「API Key 是否存在」隐式切换行为。
+     * 配置缺失在 dev/test 下允许 Mock（日志醒目）；生产缺 Key 直接 fail-fast 拒绝启动。
      */
     @Bean
     @Primary
-    public ChatClient chatClient(ObjectMapper objectMapper) {
-        // 如果API Key未配置，使用模拟客户端
-        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your-api-key-here")) {
-            log.warn("DeepSeek API Key 未配置，使用 MockChatClient");
-            return new MockChatClient();
+    public ChatClient chatClient(ObjectMapper objectMapper, Environment environment) {
+        boolean keyMissing = apiKey == null || apiKey.isBlank() || apiKey.equals("your-api-key-here");
+
+        if (keyMissing) {
+            if (environment.acceptsProfiles(Profiles.of("dev", "test"))) {
+                log.warn("========== 【开发模式】 ==========");
+                log.warn("DeepSeek API Key 未配置，使用 MockChatClient。");
+                log.warn("返回的是【伪造评分】，仅供界面联调，切勿用于真实数据！");
+                log.warn("================================");
+                return new MockChatClient();
+            }
+            // ★ 生产环境：拒绝启动，而不是悄悄用假数据
+            throw new IllegalStateException(
+                    "缺少 DEEPSEEK_API_KEY。生产环境不允许以 Mock 模式运行，"
+                            + "请配置环境变量，或使用 -Dspring.profiles.active=dev 在本地开发。");
         }
 
         log.info("使用 DeepSeek API，模型: {}", model);
@@ -100,27 +116,42 @@ public class AIConfig {
                 headers.setBearerAuth(apiKey);
 
                 String requestBody = objectMapper.writeValueAsString(request);
-                log.debug("DeepSeek API 请求: {}", requestBody);
+                // ★ 完整内容只进 trace；debug 只打长度，避免学生作文原文进日志
+                log.debug("DeepSeek API 请求: {} 字符", requestBody.length());
+                log.trace("DeepSeek API 请求体: {}", requestBody);
 
                 HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
                 ResponseEntity<String> response = restTemplate.postForEntity(
                         API_URL, entity, String.class);
 
                 String responseBody = response.getBody();
-                log.debug("DeepSeek API 响应: {}", responseBody);
+                log.debug("DeepSeek API 响应: {} 字符",
+                        responseBody != null ? responseBody.length() : 0);
+                log.trace("DeepSeek API 响应体: {}", responseBody);
 
                 if (responseBody != null) {
                     DeepSeekResponse deepSeekResponse = objectMapper.readValue(
                             responseBody, DeepSeekResponse.class);
                     if (deepSeekResponse.getChoices() != null
-                            && !deepSeekResponse.getChoices().isEmpty()
-                            && deepSeekResponse.getChoices().get(0).getMessage() != null) {
-                        return deepSeekResponse.getChoices().get(0).getMessage().getContent();
+                            && !deepSeekResponse.getChoices().isEmpty()) {
+                        Choice choice = deepSeekResponse.getChoices().get(0);
+
+                        // ★ 先判截断，再取内容
+                        if ("length".equals(choice.getFinishReason())) {
+                            throw new TruncatedResponseException(
+                                    "模型输出被 max_tokens(" + maxTokens + ") 截断，无法得到完整 JSON");
+                        }
+                        if (choice.getMessage() != null && choice.getMessage().getContent() != null) {
+                            return choice.getMessage().getContent();
+                        }
                     }
                 }
 
                 log.warn("DeepSeek API 返回空结果");
-                return "AI调用失败，未返回有效结果";
+                // ★ 抛异常让调用方明确知道失败，而不是把错误伪装成正常返回值
+                throw new IllegalStateException("DeepSeek API 返回空结果");
+            } catch (TruncatedResponseException e) {
+                throw e;
             } catch (Exception e) {
                 log.error("调用 DeepSeek API 失败", e);
                 throw new RuntimeException("调用 DeepSeek API 失败: " + e.getMessage(), e);
@@ -163,6 +194,8 @@ public class AIConfig {
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Choice {
             private Message message;
+            @JsonProperty("finish_reason")
+            private String finishReason;      // ★ "stop" = 正常结束，"length" = 被截断
         }
     }
 

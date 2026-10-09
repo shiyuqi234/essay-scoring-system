@@ -1,6 +1,5 @@
 package com.study.ai.essayscoring.controller;
 
-import com.study.ai.essayscoring.service.AIScoringService;
 import com.study.ai.essayscoring.service.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +20,6 @@ public class TestController {
 
     @Autowired(required = false)
     private ChatClient chatClient;
-
-    @Autowired(required = false)
-    private AIScoringService aiScoringService;
 
     @Value("${spring.cloud.ai.deepseek.api-key:your-api-key-here}")
     private String apiKey;
@@ -80,10 +76,8 @@ public class TestController {
             result.put("isMock", true);
         }
 
-        // 最近一次错误
-        if (aiScoringService != null) {
-            result.put("lastAiError", aiScoringService.getLastError() != null ? aiScoringService.getLastError() : "无错误");
-        }
+        // 修复 7 后：请求级错误字段已从单例移除（不应把请求级状态落在单例上），
+        // 错误随 ScoringResult.error 返回值传递，这里不再提供。
 
         // 快速测试：发送一个简单请求
         if (chatClient != null) {

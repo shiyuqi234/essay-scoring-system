@@ -1,8 +1,6 @@
 package com.study.ai.essayscoring.dto;
 
-import com.study.ai.essayscoring.entity.UserRole;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -15,13 +13,7 @@ public class RegisterRequest {
     private String password;
 
     /**
-     * 角色：STUDENT 或 TEACHER
-     */
-    @NotNull
-    private UserRole role;
-
-    /**
-     * 学生ID（仅学生角色需要）
+     * 学生ID（注册接口只能创建学生账号，教师账号由管理员创建）
      */
     private String studentId;
 
@@ -30,4 +22,3 @@ public class RegisterRequest {
      */
     private String displayName;
 }
-

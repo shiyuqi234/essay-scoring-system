@@ -1,0 +1,20 @@
+# 开发环境配置（本地跑请加 --spring.profiles.active=dev 或 -Dspring.profiles.active=dev）
+# 把开发便利集中到这里：H2 控制台、ddl-auto: update、show-sql、DEBUG 日志。
+
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.study.ai.essayscoring: DEBUG

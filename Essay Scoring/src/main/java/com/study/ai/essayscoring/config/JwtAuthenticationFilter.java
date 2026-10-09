@@ -1,12 +1,15 @@
 package com.study.ai.essayscoring.config;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -28,15 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // 跳过 H2 控制台和其他不需要 JWT 认证的路径
+        // 跳过 H2 控制台和测试接口（不需要 JWT 处理）
         String path = request.getRequestURI();
         String contextPath = request.getContextPath();
         String requestPath = path.startsWith(contextPath) ? path.substring(contextPath.length()) : path;
-        
-        // 跳过 H2 控制台和测试接口（不需要 JWT 处理）
-        // 注意：不跳过 /api/auth，因为 /api/auth/me 需要 JWT 来解析当前用户
-        // /api/auth/login 和 /api/auth/register 虽在 permitAll 列表中，
-        // 但请求不携带 JWT，过滤器会自然放行，不会有副作用
+
         if (requestPath.startsWith("/h2-console") || requestPath.startsWith("/test")) {
             filterChain.doFilter(request, response);
             return;
@@ -48,24 +48,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String jwt = authHeader.substring(7);
-        final String username = jwtService.extractUsername(jwt);
+        try {
+            final String jwt = authHeader.substring(7);
+            final String username = jwtService.extractUsername(jwt);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
+                // ★ 增加了 userDetails.isEnabled() —— 被禁用的账号立即失效
+                if (jwtService.isTokenValid(jwt, userDetails.getUsername())
+                        && userDetails.isEnabled()) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (JwtException | IllegalArgumentException e) {
+            // ★ token 非法/过期/签名错误：只清空上下文，不抛异常，
+            //   交给后面的授权环节返回标准 401，而不是 500。
+            log.debug("JWT 校验失败: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+        } catch (AuthenticationException e) {
+            // 用户不存在等认证异常，同样降级为「未认证」
+            log.debug("认证失败: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
         }
+        // ⚠️ 只捕获 JwtException / AuthenticationException，其他异常（如数据库故障）必须继续抛出，
+        //    否则会把系统故障伪装成「未登录」。
 
         filterChain.doFilter(request, response);
     }
 }
-
