@@ -11,8 +11,11 @@ import com.study.ai.essayscoring.repository.ScoringRuleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,7 @@ public class AIScoringService {
 
     private final ChatClient chatClient;
     private final ScoringRuleRepository scoringRuleRepository;
+    private final CacheManager cacheManager;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${spring.cloud.ai.deepseek.chat.options.model:deepseek-chat}")
@@ -74,6 +78,19 @@ public class AIScoringService {
     }
 
     public ScoringResult scoreEssay(Essay essay) {
+        String cacheKey = computeIdempotencyKey(essay);
+
+        // ★ 幂等缓存：同一篇作文（年级+文体+标题+内容相同）不重复调用模型
+        org.springframework.cache.Cache cache = cacheManager != null
+                ? cacheManager.getCache("essay-score") : null;
+        if (cache != null) {
+            String cachedResponse = cache.get(cacheKey, String.class);
+            if (cachedResponse != null) {
+                log.info("命中评分缓存，跳过 LLM 调用。essayId={}, cacheKey={}", essay.getId(), cacheKey);
+                return parseUnifiedResponse(cachedResponse, essay);
+            }
+        }
+
         log.info("AI评分开始，essayId={}", essay.getId());
         try {
             String prompt = buildUnifiedPrompt(essay);
@@ -89,6 +106,11 @@ public class AIScoringService {
             }
             log.info("AI响应长度: {} 字符", aiResponse != null ? aiResponse.length() : 0);
 
+            // ★ 只缓存成功响应（幂等）；降级响应不缓存
+            if (cache != null && aiResponse != null) {
+                cache.put(cacheKey, aiResponse);
+            }
+
             return parseUnifiedResponse(aiResponse, essay);
         } catch (Exception e) {
             String rootMsg = rootCauseMessage(e);
@@ -100,6 +122,15 @@ public class AIScoringService {
             // ★ 错误随返回值传递，不落任何实例状态
             return new ScoringResult(fallback, fallbackFeedbacks, rootMsg);
         }
+    }
+
+    /**
+     * 幂等 Key：基于年级 + 文体 + 标题 + 内容，同一篇作文复用同一评分结果。
+     */
+    private String computeIdempotencyKey(Essay essay) {
+        String raw = essay.getGrade() + "|" + essay.getEssayType() + "|"
+                + essay.getTitle() + "|" + essay.getContent();
+        return DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8));
     }
 
     // ──────── Prompt 构建 ────────

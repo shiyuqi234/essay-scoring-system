@@ -2,6 +2,8 @@
 
 基于 Spring Boot + DeepSeek API 的智能作文评分与反馈系统，融合 AI 大模型能力，能够自动对学生的作文进行语法检查、内容评分，并提供结构化反馈和改进建议。
 
+> **English**: An AI-powered essay scoring and feedback system built on Spring Boot + DeepSeek. Scores essays across four dimensions, generates structured feedback, and supports async scoring (PENDING → SCORING → SUCCESS/FAILED), idempotent caching, and token metering. Backend is security-audited (4 auth vulnerabilities fixed) and covered by a 32-case offline LLM evaluation suite.
+
 ## 📋 项目功能
 
 ### 学生端功能
@@ -19,6 +21,18 @@
 
 ## 🏗️ 技术架构
 
+```mermaid
+flowchart LR
+    FE[前端 HTML/JS] -->|REST + JWT| API[Spring Boot Controller]
+    API --> SVC[EssayService]
+    SVC -->|异步| PROC[EssayScoringProcessor]
+    PROC --> AI[AIScoringService]
+    AI -->|幂等缓存| CACHE[Caffeine / Redis]
+    AI -->|LLM 调用| DS[DeepSeek API]
+    AI -->|Token 埋点| LOG[日志]
+    SVC --> DB[(H2 / MySQL)]
+```
+
 ### 后端技术栈
 - **Spring Boot 3.0.2** - 核心框架
 - **DeepSeek API** - AI 大模型接口（OpenAI 兼容，中文能力强）
@@ -30,6 +44,14 @@
 - **HTML5 + CSS3** - 现代化 UI 设计
 - **JavaScript (ES6+)** - 前端交互
 - **Chart.js** - 数据可视化（雷达图）
+
+## 🛡️ 工程实践与量化
+
+- **代码审计**：完成一次完整安全审计，修复权限提升、IDOR 越权、H2 控制台未授权访问、JWT 异常处理 4 类安全漏洞，以及事务边界不当导致的连接池耗尽缺陷。
+- **LLM 打桩评测集**：32 条离线评测样本（覆盖正常评分 / 分数越界裁剪 / 字段缺失 / feedbacks 校验 / JSON 提取 / 异常降级 / 截断重试），Mockito 打桩 ChatClient，可在 CI 中稳定回归，无需真实 API Key。
+- **评分异步化**：提交即返回，后台异步评分，状态机 PENDING → SCORING → SUCCESS / FAILED。
+- **幂等缓存**：基于作文内容 hash 的幂等 Key，同一篇作文不重复调用模型（本地 Caffeine，生产可切 Redis）。
+- **Token 埋点**：解析 DeepSeek 响应的 usage，记录 prompt / completion / total token。
 
 ## 🚀 快速开始
 

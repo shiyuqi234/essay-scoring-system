@@ -1,0 +1,22 @@
+services:
+  app:
+    build: .
+    container_name: essay-scoring
+    ports:
+      - "8080:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET 未设置}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      # 生产用默认 profile（validate + H2 关闭 + 真实 API + Redis 缓存）
+      # 本地开发请设为 dev
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+    depends_on:
+      - redis
+
+  # Redis：生产环境缓存评分结果（幂等 Key）。
+  # 需在 application.yml 把 spring.cache.type 改为 redis 并引入 spring-boot-starter-data-redis。
+  redis:
+    image: redis:7-alpine
+    container_name: essay-scoring-redis
+    ports:
+      - "6379:6379"

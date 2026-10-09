@@ -142,6 +142,13 @@ public class AIConfig {
                                     "模型输出被 max_tokens(" + maxTokens + ") 截断，无法得到完整 JSON");
                         }
                         if (choice.getMessage() != null && choice.getMessage().getContent() != null) {
+                            // ★ Token 消耗埋点：记录输入/输出 token，便于成本与用量观测
+                            if (deepSeekResponse.getUsage() != null) {
+                                Usage usage = deepSeekResponse.getUsage();
+                                log.info("DeepSeek Token 消耗: prompt={}, completion={}, total={}",
+                                        usage.getPromptTokens(), usage.getCompletionTokens(),
+                                        usage.getTotalTokens());
+                            }
                             return choice.getMessage().getContent();
                         }
                     }
@@ -188,6 +195,18 @@ public class AIConfig {
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class DeepSeekResponse {
             private List<Choice> choices;
+            private Usage usage;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Usage {
+            @JsonProperty("prompt_tokens")
+            private Integer promptTokens;
+            @JsonProperty("completion_tokens")
+            private Integer completionTokens;
+            @JsonProperty("total_tokens")
+            private Integer totalTokens;
         }
 
         @Data

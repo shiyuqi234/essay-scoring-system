@@ -1,0 +1,477 @@
+{
+  "cases": [
+    {
+      "id": "normal_full",
+      "desc": "完整正常评分：4维度+4评语+2反馈",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0,
+        "contentScore": 25.0,
+        "structureScore": 20.0,
+        "languageScore": 22.0,
+        "creativityScore": 18.0,
+        "feedbackCount": 2,
+        "hasPraise": true
+      }
+    },
+    {
+      "id": "normal_integer",
+      "desc": "整数评分",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 26, \"structureScore\": 21, \"languageScore\": 21, \"creativityScore\": 17, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0,
+        "feedbackCount": 2
+      }
+    },
+    {
+      "id": "normal_decimal",
+      "desc": "小数评分（四舍五入到1位）",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25.5, \"structureScore\": 20.5, \"languageScore\": 21.5, \"creativityScore\": 17.5, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0
+      }
+    },
+    {
+      "id": "normal_minimal_comments",
+      "desc": "缺评语字段（用默认评语）",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0
+      }
+    },
+    {
+      "id": "normal_single_feedback",
+      "desc": "单条反馈",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "feedbackCount": 1,
+        "hasPraise": true
+      }
+    },
+    {
+      "id": "clamp_content_high",
+      "desc": "contentScore=999 裁剪到 30",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 999, \"structureScore\": 18, \"languageScore\": 18, \"creativityScore\": 15, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 81.0,
+        "contentScore": 30.0
+      }
+    },
+    {
+      "id": "clamp_structure_negative",
+      "desc": "structureScore=-5 裁剪到 0",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": -5, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 65.0,
+        "structureScore": 0.0
+      }
+    },
+    {
+      "id": "clamp_creativity_high",
+      "desc": "creativityScore=25.5 裁剪到 20",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 25.5, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 87.0,
+        "creativityScore": 20.0
+      }
+    },
+    {
+      "id": "clamp_all_high",
+      "desc": "四个维度全部越界 → 满分 100",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 999, \"structureScore\": 999, \"languageScore\": 999, \"creativityScore\": 999, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 100.0
+      }
+    },
+    {
+      "id": "clamp_language_negative",
+      "desc": "languageScore 负值裁剪到 0",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": -10, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 63.0,
+        "languageScore": 0.0
+      }
+    },
+    {
+      "id": "missing_structure",
+      "desc": "缺 structureScore → 默认 18",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"languageScore\": 22, \"creativityScore\": 18}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 83.0,
+        "structureScore": 18.0
+      }
+    },
+    {
+      "id": "missing_all_scores",
+      "desc": "缺所有分数 → 默认 20/18/18/15 = 71",
+      "mock": {
+        "responses": [
+          "{\"contentComment\": \"x\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 71.0,
+        "contentScore": 20.0,
+        "creativityScore": 15.0
+      }
+    },
+    {
+      "id": "missing_creativity",
+      "desc": "缺 creativityScore → 默认 15",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 82.0,
+        "creativityScore": 15.0
+      }
+    },
+    {
+      "id": "non_numeric_score",
+      "desc": "分数为字符串（非数字）→ 用默认值",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": \"abc\", \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "contentScore": 20.0,
+        "totalScore": 80.0
+      }
+    },
+    {
+      "id": "feedbacks_empty_array",
+      "desc": "feedbacks=[] → 兜底 2 条",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": []}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "feedbackCount": 2,
+        "hasPraise": true
+      }
+    },
+    {
+      "id": "feedbacks_no_praise",
+      "desc": "反馈无「亮点表扬」→ 保留但记日志",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}, {\"feedbackType\": \"结构建议\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "feedbackCount": 2,
+        "hasPraise": false
+      }
+    },
+    {
+      "id": "feedbacks_missing_severity",
+      "desc": "severity 缺失 → 默认「中」",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"i\", \"suggestion\": \"s\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "feedbackCount": 1,
+        "hasPraise": true
+      }
+    },
+    {
+      "id": "feedbacks_null",
+      "desc": "feedbacks 字段为 null → 兜底",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "feedbackCount": 2,
+        "hasPraise": true
+      }
+    },
+    {
+      "id": "json_in_plain_text",
+      "desc": "JSON 包裹在说明文字里",
+      "mock": {
+        "responses": [
+          "评分结果如下：{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]} 以上"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0
+      }
+    },
+    {
+      "id": "json_in_code_block",
+      "desc": "JSON 包裹在 ``` 代码块里",
+      "mock": {
+        "responses": [
+          "```json\n{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}\n```"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0
+      }
+    },
+    {
+      "id": "json_with_whitespace",
+      "desc": "JSON 前后有空白换行",
+      "mock": {
+        "responses": [
+          "\n\n  {\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}  \n\n"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0
+      }
+    },
+    {
+      "id": "llm_runtime_exception",
+      "desc": "LLM 调用抛 RuntimeException → 降级 78 分",
+      "mock": {
+        "responses": null,
+        "exception": "RuntimeException"
+      },
+      "expect": {
+        "success": false,
+        "totalScore": 78.0,
+        "errorContains": "根因"
+      }
+    },
+    {
+      "id": "llm_invalid_json",
+      "desc": "LLM 返回非 JSON 文本 → 降级",
+      "mock": {
+        "responses": [
+          "这不是一个有效的 JSON 响应"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": false,
+        "totalScore": 78.0
+      }
+    },
+    {
+      "id": "llm_feedback_fallback_on_fail",
+      "desc": "降级评分含 2 条兜底反馈",
+      "mock": {
+        "responses": null,
+        "exception": "RuntimeException"
+      },
+      "expect": {
+        "success": false,
+        "totalScore": 78.0,
+        "feedbackCount": 2,
+        "hasPraise": true
+      }
+    },
+    {
+      "id": "truncated_then_success",
+      "desc": "截断后重试一次成功",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}"
+        ],
+        "exception": "TruncatedResponseException"
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.0
+      }
+    },
+    {
+      "id": "truncated_then_fail",
+      "desc": "截断后重试仍失败 → 降级",
+      "mock": {
+        "responses": null,
+        "exception": "TruncatedResponseException"
+      },
+      "expect": {
+        "success": false,
+        "totalScore": 78.0,
+        "errorContains": "截断"
+      }
+    },
+    {
+      "id": "boundary_zero_all",
+      "desc": "全 0 分（合法边界）",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 0, \"structureScore\": 0, \"languageScore\": 0, \"creativityScore\": 0, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 0.0
+      }
+    },
+    {
+      "id": "boundary_max_all",
+      "desc": "恰好满分边界（30/25/25/20）",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 30, \"structureScore\": 25, \"languageScore\": 25, \"creativityScore\": 20, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 100.0
+      }
+    },
+    {
+      "id": "mixed_clamp_and_missing",
+      "desc": "部分越界 + 部分缺失",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 999, \"languageScore\": 22}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "contentScore": 30.0,
+        "structureScore": 18.0,
+        "creativityScore": 15.0,
+        "totalScore": 85.0
+      }
+    },
+    {
+      "id": "empty_json_object",
+      "desc": "空 JSON 对象 {} → 全部默认分（20/18/18/15=71）",
+      "mock": {
+        "responses": [
+          "{}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 71.0,
+        "contentScore": 20.0,
+        "creativityScore": 15.0
+      }
+    },
+    {
+      "id": "many_feedbacks",
+      "desc": "5 条反馈全保留",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25, \"structureScore\": 20, \"languageScore\": 22, \"creativityScore\": 18, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\", \"feedbacks\": [{\"feedbackType\": \"亮点表扬\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"低\"}, {\"feedbackType\": \"表达优化\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}, {\"feedbackType\": \"结构建议\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}, {\"feedbackType\": \"词汇建议\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}, {\"feedbackType\": \"语法错误\", \"position\": \"全文\", \"issue\": \"问题\", \"suggestion\": \"建议\", \"improvedExample\": \"优化后\", \"severity\": \"中\"}]}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "feedbackCount": 5,
+        "hasPraise": true
+      }
+    },
+    {
+      "id": "total_rounding",
+      "desc": "总分四舍五入：25.55+20.5+21.5+17.5=85.05→85.1",
+      "mock": {
+        "responses": [
+          "{\"contentScore\": 25.55, \"structureScore\": 20.5, \"languageScore\": 21.5, \"creativityScore\": 17.5, \"contentComment\": \"内容充实\", \"structureComment\": \"结构清晰\", \"languageComment\": \"语言流畅\", \"creativityComment\": \"有创意\", \"overallComment\": \"整体不错\"}"
+        ],
+        "exception": null
+      },
+      "expect": {
+        "success": true,
+        "totalScore": 85.1
+      }
+    }
+  ]
+}

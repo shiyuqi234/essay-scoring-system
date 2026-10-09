@@ -5,6 +5,7 @@ import com.study.ai.essayscoring.dto.EssaySummaryDTO;
 import com.study.ai.essayscoring.dto.ScoreUpdateRequest;
 import com.study.ai.essayscoring.dto.ScoringResultDTO;
 import com.study.ai.essayscoring.entity.Essay;
+import com.study.ai.essayscoring.entity.EssayStatus;
 import com.study.ai.essayscoring.entity.Feedback;
 import com.study.ai.essayscoring.entity.Score;
 import com.study.ai.essayscoring.exception.ResourceNotFoundException;
@@ -35,6 +36,7 @@ public class EssayService {
     private final ScoreRepository scoreRepository;
     private final AIScoringService aiScoringService;
     private final TransactionTemplate txTemplate;
+    private final EssayScoringProcessor scoringProcessor;
 
     /**
      * 提交作文并进行 AI 评分。
@@ -81,8 +83,46 @@ public class EssayService {
             feedbacks.forEach(f -> f.setEssay(savedEssay));
             feedbackRepository.saveAll(feedbacks);
 
+            savedEssay.setStatus(EssayStatus.SUCCESS);   // ★ 同步评分完成
+
             return buildScoringResultDTO(savedEssay, score, feedbacks);
         });
+    }
+
+    /**
+     * 异步提交作文：保存为 PENDING，返回 essayId，后台异步评分（状态机驱动）。
+     */
+    public Long submitEssayAsync(EssaySubmitDTO dto, String studentId) {
+        log.info("学生提交作文（异步）: {}", dto.getTitle());
+
+        Essay savedEssay = txTemplate.execute(status -> {
+            Essay essay = new Essay();
+            essay.setStudentName(dto.getStudentName());
+            essay.setStudentId(studentId);          // ★ 服务端注入，不读 dto
+            essay.setTitle(dto.getTitle());
+            essay.setContent(dto.getContent());
+            essay.setGrade(dto.getGrade());
+            essay.setEssayType(dto.getEssayType());
+            essay.setStatus(EssayStatus.PENDING);
+            return essayRepository.save(essay);
+        });
+        Objects.requireNonNull(savedEssay, "保存作文失败");
+
+        // ★ 触发后台异步评分（独立 Bean，@Async 生效，不阻塞请求线程）
+        scoringProcessor.scoreAsync(savedEssay.getId());
+        return savedEssay.getId();
+    }
+
+    /**
+     * 查询作文评分状态（异步评分状态机），带归属校验。
+     */
+    public EssayStatus getEssayStatus(Long essayId, String currentStudentId) {
+        Essay essay = essayRepository.findById(essayId)
+                .orElseThrow(() -> new ResourceNotFoundException("作文不存在"));
+        if (currentStudentId != null && !currentStudentId.equals(essay.getStudentId())) {
+            throw new ResourceNotFoundException("作文不存在");
+        }
+        return essay.getStatus();
     }
 
     /**

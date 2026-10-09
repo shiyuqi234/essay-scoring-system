@@ -1,0 +1,4 @@
+# 让 GitHub 不把本仓库识别为 HTML（前端静态页面是项目附属，主体是 Java/Spring Boot）
+*.html linguist-language=Java
+*.js   linguist-language=Java
+*.css  linguist-language=Java

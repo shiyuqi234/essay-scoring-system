@@ -4,6 +4,7 @@ import com.study.ai.essayscoring.dto.ApiResponse;
 import com.study.ai.essayscoring.dto.EssaySubmitDTO;
 import com.study.ai.essayscoring.dto.EssaySummaryDTO;
 import com.study.ai.essayscoring.dto.ScoringResultDTO;
+import com.study.ai.essayscoring.entity.EssayStatus;
 import com.study.ai.essayscoring.entity.UserAccount;
 import com.study.ai.essayscoring.exception.ResourceNotFoundException;
 import com.study.ai.essayscoring.repository.UserAccountRepository;
@@ -14,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 学生端API控制器
@@ -52,6 +55,19 @@ public class StudentController {
     }
 
     /**
+     * 异步提交作文：立即返回 essayId，后台异步评分（PENDING → SCORING → SUCCESS/FAILED）
+     */
+    @PostMapping("/essay/submit-async")
+    public ResponseEntity<ApiResponse> submitEssayAsync(@Valid @RequestBody EssaySubmitDTO dto,
+                                                        Principal principal) {
+        Long essayId = essayService.submitEssayAsync(dto, currentStudentId(principal));
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("essayId", essayId);
+        data.put("status", EssayStatus.PENDING.name());
+        return ResponseEntity.ok(ApiResponse.success("作文已提交，正在后台评分", data));
+    }
+
+    /**
      * 查询评分结果
      */
     @GetMapping("/essay/{id}/result")
@@ -59,6 +75,16 @@ public class StudentController {
                                                         Principal principal) {
         ScoringResultDTO result = essayService.getScoringResult(id, currentStudentId(principal));
         return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * 查询作文评分状态（异步评分状态机）
+     */
+    @GetMapping("/essay/{id}/status")
+    public ResponseEntity<ApiResponse> getEssayStatus(@PathVariable Long id,
+                                                      Principal principal) {
+        EssayStatus status = essayService.getEssayStatus(id, currentStudentId(principal));
+        return ResponseEntity.ok(ApiResponse.success(status));
     }
 
     /**

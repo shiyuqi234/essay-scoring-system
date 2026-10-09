@@ -58,6 +58,13 @@ public class Essay {
      */
     @Column(nullable = false)
     private String essayType;
+
+    /**
+     * 评分状态（异步评分状态机）：PENDING → SCORING → SUCCESS / FAILED
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private EssayStatus status = EssayStatus.PENDING;
     
     /**
      * 字数
